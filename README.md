@@ -4,18 +4,48 @@
 
 This project implements a cloud-native infrastructure for a distributed e-commerce platform using AWS and Terraform.
 
-The infrastructure includes:
+The infrastructure was designed following Infrastructure as Code (IaC) principles and includes networking, compute, messaging, database, security, and remote state management components.
 
-* Custom VPC
-* Public and Private Subnets
+## Infrastructure Components
+
+### Networking
+
+* Custom VPC (10.0.0.0/16)
+* Public Subnet (10.0.1.0/24)
+* Private Subnet (10.0.2.0/24)
 * Internet Gateway
-* Route Tables
+* Route Table
 * Security Groups
-* EC2 Instance
+
+### Compute
+
+* Amazon EC2 Instance
+
+### Database
+
+* Amazon RDS PostgreSQL
+
+### Messaging
+
 * Amazon SQS Queue
-* Amazon RDS PostgreSQL Database
-* Terraform Remote State using S3
-* DynamoDB State Locking
+
+### Infrastructure Management
+
+* Terraform Modules
+
+    * VPC Module
+    * EC2 Module
+    * RDS Module
+    * SQS Module
+* Remote State Backend (Amazon S3)
+* State Locking (Amazon DynamoDB)
+
+### Security
+
+* IAM Role for GitHub Actions
+* OpenID Connect (OIDC) Integration
+* Security Group-based access control
+* Private database deployment
 
 ## Technologies
 
@@ -26,47 +56,66 @@ The infrastructure includes:
 * Amazon SQS
 * Amazon S3
 * Amazon DynamoDB
+* AWS IAM
+* GitHub OIDC
 
-## Infrastructure Components
+## Repository Structure
 
-### Networking
-
-* Custom VPC
-* Public Subnet
-* Private Subnet
-* Internet Gateway
-* Route Table
-
-### Compute
-
-* EC2 Instance
-
-### Messaging
-
-* Amazon SQS Queue
-
-### Persistence
-
-* PostgreSQL Database (RDS)
-
-### Infrastructure Management
-
-* Terraform
-* Remote State in S3
-* State Locking with DynamoDB
+```text
+project/
+├── docs/
+│   ├── architecture.md
+│   ├── setup.md
+│   ├── deployment.md
+│   ├── security.md
+│   ├── limitations.md
+│   └── diagrams/
+├── infrastructure/
+│   └── terraform/
+│       ├── modules/
+│       │   ├── vpc/
+│       │   ├── ec2/
+│       │   ├── rds/
+│       │   └── sqs/
+│       ├── main.tf
+│       ├── provider.tf
+│       └── backend.tf
+└── README.md
+```
 
 ## Deployment
 
 Terraform is used to provision and manage all infrastructure resources.
 
-Main commands:
+### Initialize Terraform
 
 ```bash
 terraform init
+```
+
+### Review Changes
+
+```bash
 terraform plan
+```
+
+### Apply Infrastructure
+
+```bash
 terraform apply
 ```
 
-## Author
-Sara Serrano (a22307800)
-Núria Fernandes (a22305146)
+## Documentation
+
+Additional documentation is available in the `docs/` directory:
+
+* Architecture Design
+* Deployment Process
+* Security Decisions
+* Setup Guide
+* Project Limitations
+
+## Authors
+
+* Sara Serrano (a22307800)
+* Núria Fernandes (a22305146)
