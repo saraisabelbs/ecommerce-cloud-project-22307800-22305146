@@ -68,5 +68,5 @@ terraform apply
 ```
 
 ## Author
-
-Cloud Information Systems Project
+Sara Serrano (a22307800)
+Núria Fernandes (a22305146)
