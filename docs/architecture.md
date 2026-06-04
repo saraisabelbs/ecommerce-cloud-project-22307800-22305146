@@ -26,13 +26,15 @@ The database is protected using a dedicated Security Group and is only accessibl
 
 ## Infrastructure Diagram
 
-```text
-             Internet
-                 |
-                 |
-              EC2 Instance
-              /         \
-             /           \
-            /             \
- PostgreSQL RDS      Amazon SQS
-```
+![AWS Architecture](diagrams/aws-architecture.png)
+
+## Components
+
+- VPC (10.0.0.0/16)
+- Public Subnet (10.0.1.0/24)
+- Private Subnet (10.0.2.0/24)
+- EC2 Instance
+- PostgreSQL RDS
+- Amazon SQS
+- Internet Gateway
+- GitHub OIDC Integration
