@@ -115,11 +115,6 @@ Additional documentation is available in the `docs/` directory:
 * Setup Guide
 * Project Limitations
 
-## Authors
-
-* Sara Serrano (a22307800)
-* Núria Fernandes (a22305146)
-
 ## Application Services
 
 The application layer consists of three microservices built with Java 21 and Spring Boot 3.4.
@@ -233,3 +228,8 @@ project/
 ├── docker-compose.yml
 └── README.md
 ```
+
+## Authors
+
+* Sara Serrano (a22307800)
+* Núria Fernandes (a22305146)
