@@ -45,6 +45,7 @@ jobs:
       - name: Write Ansible vars
         run: |
           cat > ansible/vars.yml << EOF
+          ghcr_token: "${{ secrets.GHCR_TOKEN }}"
           key_pair_name: "deploy_key"
           catalog_service_ip: "${{ secrets.CATALOG_EC2_IP }}"
           order_service_ip: "${{ secrets.ORDER_EC2_IP }}"
