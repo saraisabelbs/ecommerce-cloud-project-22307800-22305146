@@ -19,6 +19,10 @@
         name: ec2-user
         groups: docker
         append: true
+    - name: Clean up disk space
+      shell: |
+        docker system prune -af || true
+        rm -rf /tmp/* || true
     - name: Log in to GHCR
       shell: echo "{{ ghcr_token }}" | docker login ghcr.io -u "{{ image_owner }}" --password-stdin
 
