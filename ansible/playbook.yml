@@ -1,3 +1,4 @@
+cat > ~/Desktop/ecommerce-cloud-project-22307800-22305146/ansible/playbook.yml << 'EOF'
 ---
 - name: Install Docker on all hosts
   hosts: all
@@ -6,15 +7,11 @@
     - vars.yml
 
   tasks:
-    - name: Update yum packages
-      yum:
-        name: "*"
-        state: latest
-
     - name: Install Docker
-      yum:
-        name: docker
-        state: present
+      shell: |
+        dnf install -y docker
+      args:
+        creates: /usr/bin/docker
 
     - name: Start and enable Docker service
       systemd:
@@ -28,14 +25,9 @@
         groups: docker
         append: true
 
-    - name: Install Docker Compose plugin
+    - name: Log in to GitHub Container Registry
       shell: |
-        mkdir -p /usr/local/lib/docker/cli-plugins
-        curl -SL https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-linux-x86_64 \
-          -o /usr/local/lib/docker/cli-plugins/docker-compose
-        chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
-      args:
-        creates: /usr/local/lib/docker/cli-plugins/docker-compose
+        echo "{{ ghcr_token }}" | docker login ghcr.io -u "{{ image_owner }}" --password-stdin
 
 # ─── Deploy catalog-service ───────────────────────────────────
 - name: Deploy catalog-service
@@ -46,25 +38,22 @@
 
   tasks:
     - name: Pull catalog-service image
-      community.docker.docker_image:
-        name: "{{ catalog_image }}"
-        source: pull
+      shell: docker pull "{{ catalog_image }}"
 
     - name: Run catalog-service container
-      community.docker.docker_container:
-        name: catalog-service
-        image: "{{ catalog_image }}"
-        state: started
-        restart_policy: always
-        ports:
-          - "8082:8082"
-        env:
-          DB_HOST: "{{ db_host }}"
-          DB_PORT: "{{ db_port }}"
-          DB_NAME: "catalogdb"
-          DB_USER: "{{ db_user }}"
-          DB_PASSWORD: "{{ db_password }}"
-          AWS_REGION: "{{ aws_region }}"
+      shell: |
+        docker rm -f catalog-service || true
+        docker run -d \
+          --name catalog-service \
+          --restart always \
+          -p 8082:8082 \
+          -e DB_HOST="{{ db_host }}" \
+          -e DB_PORT="{{ db_port }}" \
+          -e DB_NAME="catalogdb" \
+          -e DB_USER="{{ db_user }}" \
+          -e DB_PASSWORD="{{ db_password }}" \
+          -e AWS_REGION="{{ aws_region }}" \
+          "{{ catalog_image }}"
 
 # ─── Deploy order-service ─────────────────────────────────────
 - name: Deploy order-service
@@ -75,27 +64,24 @@
 
   tasks:
     - name: Pull order-service image
-      community.docker.docker_image:
-        name: "{{ order_image }}"
-        source: pull
+      shell: docker pull "{{ order_image }}"
 
     - name: Run order-service container
-      community.docker.docker_container:
-        name: order-service
-        image: "{{ order_image }}"
-        state: started
-        restart_policy: always
-        ports:
-          - "8083:8083"
-        env:
-          DB_HOST: "{{ db_host }}"
-          DB_PORT: "{{ db_port }}"
-          DB_NAME: "orderdb"
-          DB_USER: "{{ db_user }}"
-          DB_PASSWORD: "{{ db_password }}"
-          AWS_REGION: "{{ aws_region }}"
-          SQS_QUEUE_URL: "{{ sqs_queue_url }}"
-          CATALOG_SERVICE_URL: "http://{{ catalog_service_ip }}:8082"
+      shell: |
+        docker rm -f order-service || true
+        docker run -d \
+          --name order-service \
+          --restart always \
+          -p 8083:8083 \
+          -e DB_HOST="{{ db_host }}" \
+          -e DB_PORT="{{ db_port }}" \
+          -e DB_NAME="orderdb" \
+          -e DB_USER="{{ db_user }}" \
+          -e DB_PASSWORD="{{ db_password }}" \
+          -e AWS_REGION="{{ aws_region }}" \
+          -e SQS_QUEUE_URL="{{ sqs_queue_url }}" \
+          -e CATALOG_SERVICE_URL="http://{{ catalog_service_ip }}:8082" \
+          "{{ order_image }}"
 
 # ─── Deploy notification-service ──────────────────────────────
 - name: Deploy notification-service
@@ -106,18 +92,16 @@
 
   tasks:
     - name: Pull notification-service image
-      community.docker.docker_image:
-        name: "{{ notification_image }}"
-        source: pull
+      shell: docker pull "{{ notification_image }}"
 
     - name: Run notification-service container
-      community.docker.docker_container:
-        name: notification-service
-        image: "{{ notification_image }}"
-        state: started
-        restart_policy: always
-        ports:
-          - "8084:8084"
-        env:
-          AWS_REGION: "{{ aws_region }}"
-          SQS_QUEUE_URL: "{{ sqs_queue_url }}"
+      shell: |
+        docker rm -f notification-service || true
+        docker run -d \
+          --name notification-service \
+          --restart always \
+          -p 8084:8084 \
+          -e AWS_REGION="{{ aws_region }}" \
+          -e SQS_QUEUE_URL="{{ sqs_queue_url }}" \
+          "{{ notification_image }}"
+EOF
