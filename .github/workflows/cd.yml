@@ -1,0 +1,71 @@
+name: CD — Deploy
+
+on:
+  workflow_run:
+    workflows: ["CI — Build & Push"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    # Só faz deploy se o CI passou
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    permissions:
+      id-token: write   # necessário para OIDC
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Ansible and Docker collection
+        run: |
+          pip install ansible
+          ansible-galaxy collection install community.docker
+
+      - name: Write SSH private key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key.pem
+          chmod 600 ~/.ssh/deploy_key.pem
+
+      - name: Write Ansible vars
+        run: |
+          cat > ansible/vars.yml << EOF
+          key_pair_name: "deploy_key"
+          catalog_service_ip: "${{ secrets.CATALOG_EC2_IP }}"
+          order_service_ip: "${{ secrets.ORDER_EC2_IP }}"
+          notification_service_ip: "${{ secrets.NOTIFICATION_EC2_IP }}"
+          aws_region: "${{ secrets.AWS_REGION }}"
+          sqs_queue_url: "${{ secrets.SQS_QUEUE_URL }}"
+          db_host: "${{ secrets.DB_HOST }}"
+          db_port: "5432"
+          db_user: "${{ secrets.DB_USER }}"
+          db_password: "${{ secrets.DB_PASSWORD }}"
+          registry: "ghcr.io"
+          image_owner: "${{ github.repository_owner }}"
+          image_tag: "sha-${{ github.sha }}"
+          catalog_image: "ghcr.io/${{ github.repository_owner }}/catalog-service:sha-${{ github.sha }}"
+          order_image: "ghcr.io/${{ github.repository_owner }}/order-service:sha-${{ github.sha }}"
+          notification_image: "ghcr.io/${{ github.repository_owner }}/notification-service:sha-${{ github.sha }}"
+          EOF
+
+      - name: Run Ansible playbook
+        run: |
+          ansible-playbook -i ansible/inventory.yml ansible/playbook.yml \
+            --private-key ~/.ssh/deploy_key.pem \
+            -e "ansible_ssh_private_key_file=~/.ssh/deploy_key.pem"
