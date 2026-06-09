@@ -58,10 +58,10 @@ jobs:
           db_password: "${{ secrets.DB_PASSWORD }}"
           registry: "ghcr.io"
           image_owner: "${{ github.repository_owner }}"
-          image_tag: "sha-${{ github.sha }}"
-          catalog_image: "ghcr.io/${{ github.repository_owner }}/catalog-service:sha-${{ github.sha }}"
-          order_image: "ghcr.io/${{ github.repository_owner }}/order-service:sha-${{ github.sha }}"
-          notification_image: "ghcr.io/${{ github.repository_owner }}/notification-service:sha-${{ github.sha }}"
+          image_tag: "latest"
+          catalog_image: "ghcr.io/${{ github.repository_owner }}/catalog-service:latest"
+          order_image: "ghcr.io/${{ github.repository_owner }}/order-service:latest"
+          notification_image: "ghcr.io/${{ github.repository_owner }}/notification-service:latest"
           EOF
 
       - name: Run Ansible playbook
