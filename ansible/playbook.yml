@@ -1,57 +1,41 @@
-cat > ~/Desktop/ecommerce-cloud-project-22307800-22305146/ansible/playbook.yml << 'EOF'
 ---
 - name: Install Docker on all hosts
   hosts: all
   become: true
   vars_files:
     - vars.yml
-
   tasks:
     - name: Install Docker
-      shell: |
-        dnf install -y docker
+      shell: dnf install -y docker
       args:
         creates: /usr/bin/docker
-
     - name: Start and enable Docker service
       systemd:
         name: docker
         state: started
         enabled: true
-
     - name: Add ec2-user to docker group
       user:
         name: ec2-user
         groups: docker
         append: true
-
-    - name: Log in to GitHub Container Registry
-      shell: |
-        echo "{{ ghcr_token }}" | docker login ghcr.io -u "{{ image_owner }}" --password-stdin
+    - name: Log in to GHCR
+      shell: echo "{{ ghcr_token }}" | docker login ghcr.io -u "{{ image_owner }}" --password-stdin
 
 - name: Deploy catalog-service
   hosts: catalog
   become: true
   vars_files:
     - vars.yml
-
   tasks:
-    - name: Pull catalog-service image
-      shell: docker pull "{{ catalog_image }}"
-
-    - name: Run catalog-service container
+    - name: Pull and run catalog-service
       shell: |
+        docker pull "{{ catalog_image }}"
         docker rm -f catalog-service || true
-        docker run -d \
-          --name catalog-service \
-          --restart always \
-          -p 8082:8082 \
-          -e DB_HOST="{{ db_host }}" \
-          -e DB_PORT="{{ db_port }}" \
-          -e DB_NAME="catalogdb" \
-          -e DB_USER="{{ db_user }}" \
-          -e DB_PASSWORD="{{ db_password }}" \
-          -e AWS_REGION="{{ aws_region }}" \
+        docker run -d --name catalog-service --restart always -p 8082:8082 \
+          -e DB_HOST="{{ db_host }}" -e DB_PORT="{{ db_port }}" \
+          -e DB_NAME="catalogdb" -e DB_USER="{{ db_user }}" \
+          -e DB_PASSWORD="{{ db_password }}" -e AWS_REGION="{{ aws_region }}" \
           "{{ catalog_image }}"
 
 - name: Deploy order-service
@@ -59,24 +43,15 @@ cat > ~/Desktop/ecommerce-cloud-project-22307800-22305146/ansible/playbook.yml <
   become: true
   vars_files:
     - vars.yml
-
   tasks:
-    - name: Pull order-service image
-      shell: docker pull "{{ order_image }}"
-
-    - name: Run order-service container
+    - name: Pull and run order-service
       shell: |
+        docker pull "{{ order_image }}"
         docker rm -f order-service || true
-        docker run -d \
-          --name order-service \
-          --restart always \
-          -p 8083:8083 \
-          -e DB_HOST="{{ db_host }}" \
-          -e DB_PORT="{{ db_port }}" \
-          -e DB_NAME="orderdb" \
-          -e DB_USER="{{ db_user }}" \
-          -e DB_PASSWORD="{{ db_password }}" \
-          -e AWS_REGION="{{ aws_region }}" \
+        docker run -d --name order-service --restart always -p 8083:8083 \
+          -e DB_HOST="{{ db_host }}" -e DB_PORT="{{ db_port }}" \
+          -e DB_NAME="orderdb" -e DB_USER="{{ db_user }}" \
+          -e DB_PASSWORD="{{ db_password }}" -e AWS_REGION="{{ aws_region }}" \
           -e SQS_QUEUE_URL="{{ sqs_queue_url }}" \
           -e CATALOG_SERVICE_URL="http://{{ catalog_service_ip }}:8082" \
           "{{ order_image }}"
@@ -86,19 +61,12 @@ cat > ~/Desktop/ecommerce-cloud-project-22307800-22305146/ansible/playbook.yml <
   become: true
   vars_files:
     - vars.yml
-
   tasks:
-    - name: Pull notification-service image
-      shell: docker pull "{{ notification_image }}"
-
-    - name: Run notification-service container
+    - name: Pull and run notification-service
       shell: |
+        docker pull "{{ notification_image }}"
         docker rm -f notification-service || true
-        docker run -d \
-          --name notification-service \
-          --restart always \
-          -p 8084:8084 \
+        docker run -d --name notification-service --restart always -p 8084:8084 \
           -e AWS_REGION="{{ aws_region }}" \
           -e SQS_QUEUE_URL="{{ sqs_queue_url }}" \
           "{{ notification_image }}"
-EOF
