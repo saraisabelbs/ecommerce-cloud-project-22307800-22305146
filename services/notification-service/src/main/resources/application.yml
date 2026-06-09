@@ -1,0 +1,36 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: notification-service
+
+aws:
+  region: ${AWS_REGION:eu-west-1}
+  sqs:
+    queue-url: ${SQS_QUEUE_URL:https://sqs.eu-west-1.amazonaws.com/123456789/order-notifications}
+
+# How often to poll SQS (milliseconds)
+notification:
+  polling:
+    interval-ms: ${POLLING_INTERVAL_MS:5000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+
+logging:
+  level:
+    pt.ulusofona.notificationservice: DEBUG

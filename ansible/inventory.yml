@@ -1,0 +1,21 @@
+all:
+  vars:
+    ansible_user: ec2-user
+    ansible_ssh_private_key_file: ~/.ssh/{{ key_pair_name }}.pem
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+
+  children:
+    catalog:
+      hosts:
+        catalog-server:
+          ansible_host: "{{ catalog_service_ip }}"   # preencher com IP da EC2 da Sara
+
+    order:
+      hosts:
+        order-server:
+          ansible_host: "{{ order_service_ip }}"     # preencher com IP da EC2 da Sara
+
+    notification:
+      hosts:
+        notification-server:
+          ansible_host: "{{ notification_service_ip }}" # preencher com IP da EC2 da Sara

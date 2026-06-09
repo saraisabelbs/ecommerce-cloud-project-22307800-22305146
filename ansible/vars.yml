@@ -1,0 +1,24 @@
+# ─── Preencher com os valores reais da Sara ───────────────────
+key_pair_name: "ecommerce-keypair"        # nome do key pair criado pela Sara no Terraform
+catalog_service_ip: "0.0.0.0"            # IP público da EC2 do catalog-service
+order_service_ip: "0.0.0.0"              # IP público da EC2 do order-service
+notification_service_ip: "0.0.0.0"       # IP público da EC2 do notification-service
+
+# ─── AWS ──────────────────────────────────────────────────────
+aws_region: "eu-west-1"
+sqs_queue_url: ""                         # preencher com o URL da fila SQS da Sara
+
+# ─── Base de dados (RDS da Sara) ──────────────────────────────
+db_host: ""                               # endpoint do RDS da Sara
+db_port: "5432"
+db_user: "postgres"
+db_password: ""                           # password do RDS (guardada no Secrets Manager)
+
+# ─── Container registry ───────────────────────────────────────
+registry: "ghcr.io"
+image_owner: "saraisabelbs"               # username GitHub
+image_tag: "latest"
+
+catalog_image: "{{ registry }}/{{ image_owner }}/catalog-service:{{ image_tag }}"
+order_image: "{{ registry }}/{{ image_owner }}/order-service:{{ image_tag }}"
+notification_image: "{{ registry }}/{{ image_owner }}/notification-service:{{ image_tag }}"
