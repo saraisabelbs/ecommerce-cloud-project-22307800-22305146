@@ -1,24 +1,20 @@
-# ─── Preencher com os valores reais da Sara ───────────────────
-key_pair_name: "ecommerce-keypair"        # nome do key pair criado pela Sara no Terraform
-catalog_service_ip: "0.0.0.0"            # IP público da EC2 do catalog-service
-order_service_ip: "0.0.0.0"              # IP público da EC2 do order-service
-notification_service_ip: "0.0.0.0"       # IP público da EC2 do notification-service
+key_pair_name: "deploy_key"
+catalog_service_ip: "44.220.172.96"
+order_service_ip: "44.220.172.96"
+notification_service_ip: "44.220.172.96"
 
-# ─── AWS ──────────────────────────────────────────────────────
-aws_region: "eu-west-1"
-sqs_queue_url: ""                         # preencher com o URL da fila SQS da Sara
+aws_region: "us-east-1"
+sqs_queue_url: "https://sqs.us-east-1.amazonaws.com/519718528311/ecommerce-orders-queue"
 
-# ─── Base de dados (RDS da Sara) ──────────────────────────────
-db_host: ""                               # endpoint do RDS da Sara
+db_host: "ecommerce-db.cgpe6o2e0hfl.us-east-1.rds.amazonaws.com"
 db_port: "5432"
 db_user: "postgres"
-db_password: ""                           # password do RDS (guardada no Secrets Manager)
+db_password: "Password123!"
 
-# ─── Container registry ───────────────────────────────────────
 registry: "ghcr.io"
-image_owner: "saraisabelbs"               # username GitHub
+image_owner: "saraisabelbs"
 image_tag: "latest"
 
-catalog_image: "{{ registry }}/{{ image_owner }}/catalog-service:{{ image_tag }}"
-order_image: "{{ registry }}/{{ image_owner }}/order-service:{{ image_tag }}"
-notification_image: "{{ registry }}/{{ image_owner }}/notification-service:{{ image_tag }}"
+catalog_image: "ghcr.io/saraisabelbs/catalog-service:latest"
+order_image: "ghcr.io/saraisabelbs/order-service:latest"
+notification_image: "ghcr.io/saraisabelbs/notification-service:latest"
