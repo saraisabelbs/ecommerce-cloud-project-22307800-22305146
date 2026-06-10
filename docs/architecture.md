@@ -1,40 +1,73 @@
 # Architecture
 
-## System Components
+## System Overview
 
-The infrastructure is composed of:
+This project implements a cloud-native Mini E-Commerce platform using AWS infrastructure and three microservices communicating via REST and asynchronous messaging (SQS).
 
-* AWS VPC
-* Public Subnet
-* Private Subnet
-* EC2 Instance
-* PostgreSQL RDS Database
-* Amazon SQS Queue
+## Application Services
+
+| Service | Port | Responsibility |
+|---|---|---|
+| **catalog-service** | 8082 | Product catalog management (CRUD) |
+| **order-service** | 8083 | Order management, SQS producer |
+| **notification-service** | 8084 | SQS consumer, order notifications |
 
 ## Communication Flow
 
-User/Application
-→ EC2 Instance
+```
+Client
+  │
+  ▼
+catalog-service ──── PostgreSQL (RDS) [private subnet]
+  
+Client
+  │
+  ▼
+order-service ──── PostgreSQL (RDS) [private subnet]
+  │
+  ├── OpenFeign ──► catalog-service (validate product + reduce stock)
+  │
+  └── SQS ──► notification-service (order created event)
+```
 
-EC2 Instance
-→ PostgreSQL Database (RDS)
+## Infrastructure Components
 
-EC2 Instance
-→ Amazon SQS Queue
+| Component | Details |
+|---|---|
+| **VPC** | 10.0.0.0/16 |
+| **Public Subnet** | 10.0.1.0/24 — EC2 instances |
+| **Private Subnet** | 10.0.2.0/24 — RDS database |
+| **EC2 Instance** | Hosts Docker containers |
+| **RDS PostgreSQL** | Persistent storage for catalog and order data |
+| **SQS Queue** | Async communication between order and notification services |
+| **Internet Gateway** | Public internet access |
+| **GitHub OIDC** | Keyless AWS authentication for CI/CD |
 
-The database is protected using a dedicated Security Group and is only accessible from the EC2 Security Group.
+## Security Design
+
+- RDS is in a **private subnet** — not accessible from the internet
+- EC2 Security Group allows only ports 22 (SSH), 8082, 8083, 8084
+- RDS Security Group allows port 5432 only from EC2 Security Group
+- GitHub Actions authenticates with AWS via **OIDC** — no hardcoded credentials
 
 ## Infrastructure Diagram
 
-![AWS Architecture](diagrams/aws-architecture.png)
+![AWS Architecture](../diagrams/aws-architecture.png)
 
-## Components
+## CI/CD Flow
 
-- VPC (10.0.0.0/16)
-- Public Subnet (10.0.1.0/24)
-- Private Subnet (10.0.2.0/24)
-- EC2 Instance
-- PostgreSQL RDS
-- Amazon SQS
-- Internet Gateway
-- GitHub OIDC Integration
+```
+git push → GitHub Actions CI
+  │
+  ├── Build Docker image (catalog, order, notification)
+  └── Push to GHCR (ghcr.io)
+        │
+        ▼
+     GitHub Actions CD
+        │
+        ├── Authenticate with AWS via OIDC
+        └── Run Ansible playbook
+              │
+              ├── Install Docker on EC2
+              └── Pull and run containers
+```

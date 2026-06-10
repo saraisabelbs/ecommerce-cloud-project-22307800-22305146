@@ -2,15 +2,41 @@
 
 ## Current Limitations
 
-- Application services are not yet deployed.
-- CI/CD pipeline has not yet been integrated.
-- Ansible automation is not yet implemented.
-- Docker container deployment is pending.
+### Infrastructure
+- Single EC2 instance hosts all three services — no high availability
+- No auto-scaling configured
+- Single availability zone deployment
+
+### Application
+- No API Gateway or load balancer in front of services
+- `notification-service` logs notifications instead of sending real emails
+- No authentication/authorization on the REST APIs
+- Stock reduction is not atomic — race condition possible under high load
+
+### CI/CD
+- No rollback mechanism if deployment fails
+- All three services deploy to the same EC2 instance
+
+### Monitoring
+- No CloudWatch alarms configured
+- No centralized logging (logs are per-container on EC2)
+
+## What Was Implemented
+
+- ✅ Custom VPC with public and private subnets
+- ✅ All infrastructure provisioned via Terraform modules
+- ✅ Three containerized microservices (catalog, order, notification)
+- ✅ PostgreSQL on RDS in private subnet
+- ✅ Asynchronous communication via AWS SQS
+- ✅ Ansible for EC2 configuration and container deployment
+- ✅ GitHub Actions CI/CD with OIDC authentication
+- ✅ No hardcoded credentials anywhere in the codebase
 
 ## Future Improvements
 
-- Implement GitHub Actions CI/CD.
-- Integrate OIDC authentication.
-- Automate server configuration using Ansible.
-- Deploy containerized microservices.
-- Implement monitoring and logging.
+- Add CloudWatch Logs and alarms for monitoring
+- Implement blue/green deployment strategy
+- Add API Gateway with rate limiting
+- Move to ECS/Fargate for better container orchestration
+- Add multi-AZ RDS for high availability
+- Implement proper secrets rotation via AWS Secrets Manager
