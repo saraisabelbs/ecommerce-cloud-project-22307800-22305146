@@ -52,6 +52,10 @@ resource "aws_instance" "web_server" {
 
   key_name = "ecommerce-key"
 
+  root_block_device {
+    volume_size = 20
+  }
+
   tags = {
     Name = "ecommerce-server"
   }
