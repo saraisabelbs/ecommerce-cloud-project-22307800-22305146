@@ -1,7 +1,7 @@
 key_pair_name: "deploy_key"
-catalog_service_ip: "44.220.172.96"
-order_service_ip: "44.220.172.96"
-notification_service_ip: "44.220.172.96"
+catalog_service_ip: "44.204.208.41"
+order_service_ip: "44.204.208.41"
+notification_service_ip: "44.204.208.41"
 
 aws_region: "us-east-1"
 sqs_queue_url: "https://sqs.us-east-1.amazonaws.com/519718528311/ecommerce-orders-queue"
